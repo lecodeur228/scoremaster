@@ -142,8 +142,35 @@ watch(() => route.params.code, (newCode) => {
   }
 })
 
-onMounted(() => {
-  loadMatch()
+onMounted(async () => {
+  try {
+    loading.value = true
+    error.value = ''
+    
+    // Récupérer le code du match depuis les paramètres de route
+    const matchCode = route.params.code as string
+    if (!matchCode) {
+      error.value = 'Code de match invalide'
+      loading.value = false
+      return
+    }
+    
+    // Charger le match par code
+    const match = await matchesStore.fetchMatchByCode(matchCode)
+    if (!match) {
+      error.value = 'Match non trouvé'
+      loading.value = false
+      return
+    }
+    
+    // S'abonner aux mises à jour en temps réel
+    unsubscribe.value = matchesStore.subscribeToMatchUpdates(match.id)
+  } catch (err) {
+    console.error('Erreur lors du chargement du match:', err)
+    error.value = 'Une erreur est survenue lors du chargement du match'
+  } finally {
+    loading.value = false
+  }
 })
 
 onUnmounted(() => {

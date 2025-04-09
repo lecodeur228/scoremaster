@@ -303,9 +303,14 @@ const applyCustomScore = async () => {
   closeCustomScoreModal()
 }
 
-// Partage
+// Fonction pour copier le lien de partage
 const copyShareLink = async () => {
-  await copy(matchShareLink.value)
-  alert('Lien copié dans le presse-papiers !')
+  if (!matchShareLink.value) return
+  try {
+    await copy(matchShareLink.value)
+    alert('Lien copié dans le presse-papiers !')
+  } catch (error) {
+    console.error('Erreur lors de la copie du lien:', error)
+  }
 }
 </script>
