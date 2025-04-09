@@ -121,20 +121,27 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import {useMatchesStore} from "../../stores/matches.store.ts";
 import type {Match} from "../../types/match.ts";
 import ConfirmationDialog from "../common/ConfirmationDialog.vue";
+import {useAuthStore} from "../../stores/auth.store.ts";
 
 const router = useRouter()
 const matchesStore = useMatchesStore()
+const authStore = useAuthStore()
 
 const matches = ref<Match[]>([])
 const loading = ref(false)
 const showDeleteConfirmation = ref(false)
 const matchToDelete = ref<Match | null>(null)
+const error =  ref('')
 
 // Charge les matchs
 const loadMatches = async () => {
   loading.value = true
+  if (!authStore.user) {
+    error.value = "Vous devez être connecté pour créer un match.";
+    return;
+  }
   try {
-    await matchesStore.fetchUserMatches()
+    await matchesStore.fetchUserMatches(authStore.user.uid)
     matches.value = [...matchesStore.matches]
   } finally {
     loading.value = false
@@ -154,7 +161,7 @@ const confirmDeleteMatch = (match: Match) => {
 
 const deleteMatch = async () => {
   if (matchToDelete.value) {
-    await matchesStore.deleteMatch(matchToDelete.value.id)
+    //await matchesStore.deleteMatch(matchToDelete.value.id)
     await loadMatches()
     showDeleteConfirmation.value = false
   }

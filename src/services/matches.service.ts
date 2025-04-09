@@ -14,7 +14,7 @@ import type { Match, Team } from '../types/match'
 import { authService } from "./auth.service.ts";
 
 class MatchesService {
-    async createMatch(match: Omit<Match, 'id'>): Promise<string> {
+    async createMatch(match: Partial<Match> & { name: string; teams: Team[] }): Promise<string> {
         const matchRef = await addDoc(collection(db, 'matches'), {
             ...match,
             createdBy: this.getCurrentUserId(),

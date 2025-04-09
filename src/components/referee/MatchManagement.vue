@@ -8,7 +8,7 @@
         <font-awesome-icon icon="arrow-left" class="mr-2" /> Retour
       </button>
       <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
-        Gestion de "{{ currentMatch.name }}"
+        Gestion de "{{ currentMatch!.name }}"
       </h2>
     </div>
 
@@ -21,13 +21,13 @@
               Scores actuels
             </h3>
             <span class="text-sm bg-gray-200 dark:bg-gray-600 px-3 py-1 rounded-full text-gray-700 dark:text-gray-300">
-              Code: <span class="font-mono">{{ currentMatch.code }}</span>
+              Code: <span class="font-mono">{{ currentMatch!.code }}</span>
             </span>
           </div>
 
           <div class="space-y-4">
             <div
-                v-for="team in currentMatch.teams"
+                v-for="team in currentMatch!.teams"
                 :key="team.id"
                 class="bg-white dark:bg-gray-800 p-4 rounded-lg flex items-center justify-between"
             >
@@ -177,6 +177,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useClipboard } from '@vueuse/core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useMatchesStore } from "../../stores/matches.store.ts";
+import type {Team} from "../../types/match.ts";
 
 const router = useRouter()
 const route = useRoute()
@@ -187,7 +188,7 @@ const matchId = computed(() => route.params.id as string)
 
 // Gestion du modal de score personnalisé
 const showCustomScoreModal = ref(false)
-const selectedTeam = ref(null)
+const selectedTeam = ref<Team | null>(null);
 const customScoreValue = ref(0)
 
 // Accès au match courant
@@ -236,7 +237,8 @@ const endMatch = async () => {
 }
 
 // Fonctions pour le score personnalisé
-const openCustomScoreModal = (team) => {
+const openCustomScoreModal = (team : Team) => {
+
   selectedTeam.value = team
   customScoreValue.value = 0
   showCustomScoreModal.value = true
@@ -249,7 +251,7 @@ const closeCustomScoreModal = () => {
 
 const applyCustomScore = async () => {
   if (selectedTeam.value && customScoreValue.value !== 0) {
-    await matchesStore.updateTeamScore(selectedTeam.value.id, parseInt(customScoreValue.value))
+    await matchesStore.updateTeamScore(selectedTeam.value.id, customScoreValue.value)
     closeCustomScoreModal()
   }
 }

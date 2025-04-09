@@ -8,7 +8,7 @@
         <font-awesome-icon icon="arrow-left" class="mr-2" /> Retour
       </button>
       <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
-        Gestion de "{{ currentMatch.name }}"
+        Gestion de "{{ currentMatch?.name }}"
       </h2>
     </div>
 
@@ -198,6 +198,7 @@ import { useClipboard } from '@vueuse/core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useMatchesStore } from "../../stores/matches.store.ts";
 import QRCodeVue3 from 'qrcode-vue3'
+import type { Match, Team } from '../../types/match'
 
 const router = useRouter()
 const route = useRoute()
@@ -208,27 +209,35 @@ const matchId = computed(() => route.params.id as string)
 
 // Gestion du modal de score personnalisé
 const showCustomScoreModal = ref(false)
-const selectedTeam = ref(null)
-const customScoreValue = ref(0)
+const selectedTeam = ref<Team | null>(null)
+const customScoreValue = ref('0')
 
 // Détection du mode sombre pour le QR code
 const isDarkMode = ref(false)
 
 // Accès au match courant
-const currentMatch = computed(() => {
-  return matchesStore.currentMatch || { teams: [] }
+const currentMatch = computed<Match>(() => {
+  return matchesStore.currentMatch || { 
+    id: '',
+    code: '',
+    name: '',
+    createdBy: '',
+    timestamp: new Date(),
+    teams: [],
+    active: true
+  }
 })
 
 // Lien de partage
 const matchShareLink = computed(() => {
-  return `${window.location.origin}/spectator/${currentMatch.value?.code}`
+  if (!currentMatch.value?.code) return ''
+  return `${window.location.origin}/spectator/${currentMatch.value.code}`
 })
 
 // Chargement initial et souscription aux mises à jour en temps réel
 onMounted(async () => {
   if (!currentMatch.value.id) {
     await matchesStore.fetchMatchById(matchId.value)
-    // La souscription est maintenant gérée dans fetchMatchById
   }
 
   // Détection initiale du mode sombre
@@ -272,22 +281,26 @@ const endMatch = async () => {
 }
 
 // Fonctions pour le score personnalisé
-const openCustomScoreModal = (team) => {
+const openCustomScoreModal = (team: Team) => {
   selectedTeam.value = team
-  customScoreValue.value = 0
+  customScoreValue.value = '0'
   showCustomScoreModal.value = true
 }
 
 const closeCustomScoreModal = () => {
   showCustomScoreModal.value = false
   selectedTeam.value = null
+  customScoreValue.value = '0'
 }
 
 const applyCustomScore = async () => {
-  if (selectedTeam.value && customScoreValue.value !== 0) {
-    await matchesStore.updateTeamScore(selectedTeam.value.id, parseInt(customScoreValue.value))
-    closeCustomScoreModal()
-  }
+  if (!selectedTeam.value) return
+  
+  const score = parseInt(customScoreValue.value)
+  if (isNaN(score)) return
+
+  await matchesStore.updateTeamScore(selectedTeam.value.id, score)
+  closeCustomScoreModal()
 }
 
 // Partage

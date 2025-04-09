@@ -172,7 +172,7 @@ const handleCreateMatch = async () => {
   isCreating.value = true
 
   try {
-    const matchData = {
+    const matchData: Omit<Match, 'id'> = {
       name: newMatch.value.name,
       teams: newMatch.value.teams
           .filter(name => name.trim())
@@ -181,10 +181,10 @@ const handleCreateMatch = async () => {
             name: name.trim(),
             score: 0
           })),
-      code: generateMatchCode(), // Ajouté
-      createdBy: authStore.user?.uid || '', // Ajouté
-      timestamp: new Date(), // Ajouté
-      active: true // Ajouté
+      code: generateMatchCode(),
+      createdBy: authStore.user?.uid || '',
+      timestamp: new Date(),
+      active: true
     }
 
     const matchId = await matchesStore.createMatch(matchData)
@@ -206,8 +206,7 @@ const generateMatchCode = (): string => {
   ).join('')
 }
 // Aller à la page de gestion d'un match
-const goToMatchManagement = (matchId : number) => {
-  //console.log(matchId)
+const goToMatchManagement = (matchId: string) => {
   router.push({ name: 'manage-match', params: { id: matchId } })
 }
 

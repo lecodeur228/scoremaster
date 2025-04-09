@@ -6,7 +6,7 @@
       </h3>
 
       <form @submit.prevent="handleSubmit" class="space-y-4">
-        <!-- Nom du match -->
+
         <div>
           <label for="match-name" class="block text-gray-700 dark:text-gray-300 mb-1">
             Nom du match *
@@ -90,12 +90,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import {useMatchesStore} from "../../stores/matches.store.ts";
+import {useAuthStore} from "../../stores/auth.store.ts";
+import type {Match} from "../../types/match.ts";
 
 const matchesStore = useMatchesStore()
-const router = useRouter()
+const authStore = useAuthStore()
 
 // État du formulaire
 const form = ref({
@@ -129,37 +130,42 @@ const removeTeam = (index: number) => {
   }
 }
 
-// Soumission du formulaire
 const handleSubmit = async () => {
-  if (!isFormValid.value) return
+  if (!isFormValid.value) return;
 
-  isSubmitting.value = true
-  error.value = ''
+  if (!authStore.user) {
+    error.value = "Vous devez être connecté pour créer un match.";
+    return;
+  }
+
+  isSubmitting.value = true;
+  error.value = "";
 
   try {
-    const matchData = {
+    const matchData: Match = {
+      id: `match-${Date.now()}`, // Génération d'un ID unique
+      code: Math.random().toString(36).substring(2, 8).toUpperCase(), // Code aléatoire
+      createdBy: authStore.user.uid, // Assuré qu'il n'est pas null
+      timestamp: new Date(),
       name: form.value.name.trim(),
+      active: true,
       teams: form.value.teams
           .filter(name => name.trim())
           .map((name, index) => ({
             id: `team-${Date.now()}-${index}`,
             name: name.trim(),
-            score: 0
-          }))
-    }
+            score: 0,
+          })),
+    };
 
-    const matchId = await matchesStore.createMatch(matchData)
-
-    // Redirection vers la page de gestion du match
-    router.push({ name: 'manage-match', params: { id: matchId } })
-
+      await matchesStore.createMatch(matchData);
   } catch (err) {
-    console.error('Erreur création match:', err)
-    error.value = "Une erreur est survenue lors de la création du match"
+    error.value = "Une erreur est survenue lors de la création du match.";
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
-}
+};
+
 </script>
 
 <style scoped>
