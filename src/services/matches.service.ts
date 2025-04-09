@@ -36,18 +36,22 @@ class MatchesService {
     }
 
     async getMatchByCode(code: string): Promise<Match | null> {
+        console.log('Recherche du match avec le code:', code)
         const q = query(
             collection(db, 'matches'),
             where('code', '==', code)
         )
         const querySnapshot = await getDocs(q)
+        console.log('Résultat de la requête:', querySnapshot.empty ? 'Aucun match trouvé' : 'Match trouvé')
+        
         if (querySnapshot.empty) return null
 
         const matchData = {
             id: querySnapshot.docs[0].id,
             ...querySnapshot.docs[0].data()
         } as Match;
-
+        
+        console.log('Match trouvé:', matchData)
         return matchData;
     }
 

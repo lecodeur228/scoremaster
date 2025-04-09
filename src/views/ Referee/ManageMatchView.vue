@@ -230,7 +230,10 @@ const currentMatch = computed<Match>(() => {
 
 // Lien de partage
 const matchShareLink = computed(() => {
-  if (!currentMatch.value?.code) return ''
+  if (!currentMatch.value?.code) {
+    console.warn('Code de match manquant:', currentMatch.value)
+    return ''
+  }
   return `${window.location.origin}/spectator/${currentMatch.value.code}`
 })
 
@@ -305,7 +308,10 @@ const applyCustomScore = async () => {
 
 // Fonction pour copier le lien de partage
 const copyShareLink = async () => {
-  if (!matchShareLink.value) return
+  if (!matchShareLink.value) {
+    alert('Le lien de partage n\'est pas disponible. Veuillez réessayer plus tard.')
+    return
+  }
   try {
     await copy(matchShareLink.value)
     alert('Lien copié dans le presse-papiers !')

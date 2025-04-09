@@ -201,10 +201,13 @@ const handleCreateMatch = async () => {
 // Fonction pour générer un code de match
 const generateMatchCode = (): string => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  return Array.from({ length: 6 }, () =>
+  const code = Array.from({ length: 6 }, () =>
       chars.charAt(Math.floor(Math.random() * chars.length))
   ).join('')
+  console.log('Code de match généré:', code)
+  return code
 }
+
 // Aller à la page de gestion d'un match
 const goToMatchManagement = (matchId: string) => {
   router.push({ name: 'manage-match', params: { id: matchId } })

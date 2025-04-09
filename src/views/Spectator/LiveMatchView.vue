@@ -149,6 +149,8 @@ onMounted(async () => {
     
     // Récupérer le code du match depuis les paramètres de route
     const matchCode = route.params.code as string
+    console.log('Code de match reçu:', matchCode)
+    
     if (!matchCode) {
       error.value = 'Code de match invalide'
       loading.value = false
@@ -156,14 +158,18 @@ onMounted(async () => {
     }
     
     // Charger le match par code
+    console.log('Chargement du match avec le code:', matchCode)
     const match = await matchesStore.fetchMatchByCode(matchCode)
+    console.log('Résultat du chargement:', match)
+    
     if (!match) {
-      error.value = 'Match non trouvé'
+      error.value = 'Match non trouvé ou terminé'
       loading.value = false
       return
     }
     
     // S'abonner aux mises à jour en temps réel
+    console.log('Abonnement aux mises à jour pour le match:', match.id)
     unsubscribe.value = matchesStore.subscribeToMatchUpdates(match.id)
   } catch (err) {
     console.error('Erreur lors du chargement du match:', err)
